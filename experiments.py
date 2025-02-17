@@ -116,7 +116,7 @@ def run_inline_benchmarks(model_wrapper):
     """
     # Updated prompts: note the "Final Answer:" marker for the complex math prompt.
     benchmarks = {
-        "simple_math": "What is 2 + 2?",
+        "simple_math": "What is 9 + 10?",
         "complex_math": (
             "Solve the following math problem step by step and provide a final answer at the end.\n"
             "What is the integral of x^2 with respect to x?\n"
@@ -128,8 +128,8 @@ def run_inline_benchmarks(model_wrapper):
     results = {}
     for name, prompt in benchmarks.items():
         system_instructions = ("Please provide the final answer in your response. "
-                               "If the question is simple, don't think too much about it. "
-                               "If it's complex, show your work. Your final answer should be indicated as 'Final Answer:'.\n\n")
+                               "If the question is simple, don't overthink it and give your answer as 'Final Answer:'."
+                               "If it's complex, show your work. Your final answer should be indicated as 'Final Answer:'.\n")
         print(f"\n[Inline] Running benchmark '{name}'")
         print(f"Prompt: {prompt}")
         start = time.time()
@@ -160,10 +160,12 @@ def run_gsm8k_benchmark(model_wrapper, dataset):
     correct = 0
     details = []
     for idx, sample in enumerate(dataset):
+        if idx == 100: # Limit to 100 samples for now
+            break
         question = sample["question"]
         gt_answer = sample["answer"]
         system_instructions = ("Please provide the final answer in your response. "
-                               "If the question is simple, don't overthink it. "
+                               "If the question is simple, don't overthink it and give your answer as 'Final Answer:'."
                                "If it's complex, show your work. Your final answer should be indicated as 'Final Answer:'.\n\n")
         
         prompt = system_instructions + question
@@ -225,16 +227,16 @@ def main():
         
         model_results = {"load_time": load_time}
         
-        # Run inline benchmarks
-        inline_results = run_inline_benchmarks(model_wrapper)
-        model_results["inline_benchmarks"] = inline_results
+        # # Run inline benchmarks
+        # inline_results = run_inline_benchmarks(model_wrapper)
+        # model_results["inline_benchmarks"] = inline_results
         
         # Run GSM8K benchmark if dataset available
         gsm8k_results = run_gsm8k_benchmark(model_wrapper, gsm8k_dataset)
         model_results["gsm8k_benchmark"] = gsm8k_results
         
         results[model_file] = model_results
-    
+        
     # Save all results to a JSON file
     with open("benchmark_results.json", "w", encoding="utf-8") as outfile:
         json.dump(results, outfile, indent=2)
